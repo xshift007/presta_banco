@@ -32,8 +32,8 @@ pipeline {
                 dir("prestabanco"){
                     script{
                          withDockerRegistry(credentialsId: 'docker-credentials'){
-                            bat "docker build -t polloh/prestabanco ."
-                            bat "docker push polloh/prestabanco"
+                            bat "docker build -t xsh1ft/prestabanco ."
+                            bat "docker push xsh1ft/prestabanco"
                         }
                     }
                 }
