@@ -22,18 +22,18 @@ pipeline {
         
         stage("Test"){
             steps{
-                dir("gestion-estudiantes-backend"){
+                dir("prestabanco"){
                     bat "mvn test"
                 }
             }
         }        
         stage("Build and Push Docker Image"){
             steps{
-                dir("gestion-estudiantes-backend"){
+                dir("prestabanco"){
                     script{
                          withDockerRegistry(credentialsId: 'docker-credentials'){
-                            bat "docker build -t polloh/gestion-estudiantes-backend ."
-                            bat "docker push polloh/gestion-estudiantes-backend"
+                            bat "docker build -t polloh/prestabanco ."
+                            bat "docker push polloh/prestabanco"
                         }
                     }
                 }
