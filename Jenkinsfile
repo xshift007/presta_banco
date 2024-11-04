@@ -37,7 +37,7 @@ pipeline {
             steps{
                 dir("prestabanco"){
                     script{
-                         withDockerRegistry(credentialsId: 'docker-credentials') {
+                         withDockerRegistry(credentialsId: 'docker-credential') {
                             bat "docker build -t xsh1ft/prestabanco ."
                             bat "docker push xsh1ft/prestabanco"
                         }
