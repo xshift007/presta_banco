@@ -38,8 +38,6 @@ pipeline {
                 dir("prestabanco"){
                     script{
                          withDockerRegistry(credentialsId: 'docker-credentials') {
-                            // Autenticación con `--password-stdin`
-                            bat 'echo %DOCKER_PASS% | docker login -u xsh1ft --password-stdin'
                             bat "docker build -t xsh1ft/prestabanco ."
                             bat "docker push xsh1ft/prestabanco"
                         }
