@@ -12,6 +12,12 @@ RUN npm install
 # Copiar el resto del código fuente
 COPY . .
 
+# Argumento para la URL del backend
+ARG VITE_BACKEND_URL=/api
+
+# Establecer la variable de entorno para Vite
+ENV VITE_BACKEND_URL=${VITE_BACKEND_URL}
+
 # Ejecutar el build
 RUN npm run build
 
@@ -24,12 +30,8 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Copiar el archivo de configuración de Nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copiar el script para reemplazar variables de entorno
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-# Exponer el puerto 80
+# Exponer el puerto 80 (Nginx sirve en el puerto 80 por defecto)
 EXPOSE 80
 
-# Ejecutar el script de reemplazo y luego iniciar Nginx
-CMD ["/entrypoint.sh"]
+# Ejecutar Nginx
+CMD ["nginx", "-g", "daemon off;"]

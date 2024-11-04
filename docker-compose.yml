@@ -1,4 +1,5 @@
 services:
+  # Base de Datos
   db:
     image: mysql:8.0
     container_name: prestabanco-db
@@ -13,17 +14,16 @@ services:
     networks:
       - prestabanco-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "db"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  backend:
+  # Instancias del Backend
+  backend1:
     build: ./prestabanco
-    container_name: prestabanco-backend
+    container_name: prestabanco-backend-1
     restart: always
-    ports:
-      - "8080:8080"
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/prestabanco_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: prestabanco_user
@@ -36,19 +36,107 @@ services:
     networks:
       - prestabanco-network
 
-  frontend:
-    build: ./front-end
-    container_name: front-end-frontend
+  backend2:
+    build: ./prestabanco
+    container_name: prestabanco-backend-2
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/prestabanco_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: prestabanco_user
+      SPRING_DATASOURCE_PASSWORD: prestabanco_password
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - prestabanco-network
+
+  backend3:
+    build: ./prestabanco
+    container_name: prestabanco-backend-3
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/prestabanco_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: prestabanco_user
+      SPRING_DATASOURCE_PASSWORD: prestabanco_password
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - prestabanco-network
+
+  # Nginx para el Backend (Balanceador de Carga)
+  nginx-backend:
+    image: nginx:stable-alpine
+    container_name: prestabanco-nginx-backend
+    restart: always
+    ports:
+      - "8080:8080" # Mapeo al host, opcionalmente puede ser eliminado si no se requiere acceso externo
+    volumes:
+      - ./nginx-backend.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - backend1
+      - backend2
+      - backend3
+    networks:
+      - prestabanco-network
+
+  # Instancias del Frontend
+  frontend1:
+    build:
+      context: ./front-end
+      args:
+        VITE_BACKEND_URL: /api
+    container_name: prestabanco-frontend-1
     restart: always
     depends_on:
-    - backend
-    ports:
-    - "80:80"
-    environment:
-    - VITE_BACKEND_URL=http://localhost:8080
+      - nginx-backend
     networks:
-    - prestabanco-network
+      - prestabanco-network
 
+  frontend2:
+    build:
+      context: ./front-end
+      args:
+        VITE_BACKEND_URL: /api
+    container_name: prestabanco-frontend-2
+    restart: always
+    depends_on:
+      - nginx-backend
+    networks:
+      - prestabanco-network
+
+  frontend3:
+    build:
+      context: ./front-end
+      args:
+        VITE_BACKEND_URL: /api
+    container_name: prestabanco-frontend-3
+    restart: always
+    depends_on:
+      - nginx-backend
+    networks:
+      - prestabanco-network
+
+  # Nginx para el Frontend (Balanceador de Carga)
+  nginx-frontend:
+    image: nginx:stable-alpine
+    container_name: prestabanco-nginx-frontend
+    restart: always
+    ports:
+      - "80:80" # Mapeo al host en el puerto 80
+    volumes:
+      - ./nginx-frontend.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend1
+      - frontend2
+      - frontend3
+      - nginx-backend
+    networks:
+      - prestabanco-network
 
 volumes:
   db_data:
