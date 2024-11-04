@@ -26,12 +26,20 @@ pipeline {
                     bat "mvn test"
                 }
             }
-        }        
+        }
+        stage("Set Docker Context") {
+            steps {
+                bat "docker context use default"
+            }
+        }
+
         stage("Build and Push Docker Image"){
             steps{
                 dir("prestabanco"){
                     script{
-                         withDockerRegistry(credentialsId: 'docker-credentials'){
+                         withDockerRegistry(credentialsId: 'docker-credentials') {
+                            // Autenticación con `--password-stdin`
+                            bat 'echo %DOCKER_PASS% | docker login -u xsh1ft --password-stdin'
                             bat "docker build -t xsh1ft/prestabanco ."
                             bat "docker push xsh1ft/prestabanco"
                         }
