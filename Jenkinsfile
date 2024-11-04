@@ -33,6 +33,7 @@ pipeline {
                     script{
                          withDockerRegistry(credentialsId: 'docker-credentials'){
                             bat "docker build -t xsh1ft/prestabanco ."
+                             bat "docker login -u xsh1ft -p password1"
                             bat "docker push xsh1ft/prestabanco"
                         }
                     }
