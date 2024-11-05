@@ -20,7 +20,7 @@ pipeline{
             steps{
                 dir("front-end"){
                     script{
-                         withDockerRegistry(credentialsId: 'docker-credentials') {
+                         withDockerRegistry(credentialsId: 'docker-credential') {
                             bat "docker build -t xsh1ft/front-end ."
                             bat "docker push xsh1ft/front-end"
                         }
